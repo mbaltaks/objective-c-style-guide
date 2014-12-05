@@ -23,17 +23,18 @@ Here are some of the documents from Apple that informed the style guide. If some
 * [Methods](#methods)
 * [Variables](#variables)
 * [Naming](#naming)
-  * [Underscores](#underscores)
 * [Comments](#comments)
 * [Init & Dealloc](#init-and-dealloc)
 * [Literals](#literals)
 * [CGRect Functions](#cgrect-functions)
 * [Constants](#constants)
 * [Enumerated Types](#enumerated-types)
+* [Bitmasks](#bitmasks)
 * [Private Properties](#private-properties)
 * [Image Naming](#image-naming)
 * [Booleans](#booleans)
 * [Singletons](#singletons)
+* [Imports](#imports)
 * [Xcode Project](#xcode-project)
 
 ## Dot-Notation Syntax
@@ -187,6 +188,10 @@ Property definitions should be used in place of naked instance variables wheneve
 }
 ```
 
+#### Variable Qualifiers
+
+When it comes to the variable qualifiers [introduced with ARC](https://developer.apple.com/library/ios/releasenotes/objectivec/rn-transitioningtoarc/Introduction/Introduction.html#//apple_ref/doc/uid/TP40011226-CH1-SW4), the qualifier (`__strong`, `__weak`, `__unsafe_unretained`, `__autoreleasing`) should be placed between the asterisks and the variable name, e.g., `NSString * __weak text`.
+
 ## Naming
 
 Apple naming conventions should be adhered to wherever possible, especially those related to [memory management rules](https://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/MemoryMgmt.html) ([NARC](http://stackoverflow.com/a/2865194/340508)).
@@ -219,7 +224,9 @@ static const NSTimeInterval NYTArticleViewControllerNavigationFadeAnimationDurat
 static const NSTimeInterval fadetime = 1.7;
 ```
 
-Properties should be camel-case with the leading word being lowercase. **If Xcode can automatically synthesize the variable, then let it.** Otherwise, in order to be consistent, the backing instance variables for these properties should be camel-case with the leading word being lowercase and a leading underscore. This is the same format as Xcode's default synthesis.
+Properties and local variables should be camel-case with the leading word being lowercase.
+
+Instance variables should be camel-case with the leading word being lowercase, and should be prefixed with an underscore. This is consistent with instance variables synthesized automatically by LLVM. **If LLVM can synthesize the variable automatically, then let it.**
 
 **For example:**
 
@@ -232,10 +239,6 @@ Properties should be camel-case with the leading word being lowercase. **If Xcod
 ```objc
 id varnm;
 ```
-
-### Underscores
-
-When using properties, instance variables should always be accessed and mutated using `self.`. This means that all properties will be visually distinct, as they will all be prefaced with `self.`. Local variables should not contain underscores.
 
 ## Comments
 
@@ -346,6 +349,21 @@ typedef NS_ENUM(NSInteger, NYTAdRequestState)
 };
 ```
 
+## Bitmasks
+
+When working with bitmasks, use the `NS_OPTIONS` macro.
+
+**Example:**
+
+```objc
+typedef NS_OPTIONS(NSUInteger, NYTAdCategory) {
+  NYTAdCategoryAutos      = 1 << 0,
+  NYTAdCategoryJobs       = 1 << 1,
+  NYTAdCategoryRealState  = 1 << 2,
+  NYTAdCategoryTechnology = 1 << 3
+};
+```
+
 ## Private Properties
 
 Private properties should be declared in class extensions (anonymous categories) in the implementation file of a class. Named categories (such as `NYTPrivate` or `private`) should never be used unless extending another class.
@@ -407,8 +425,8 @@ if (![someObject boolValue])
 **Not:**
 
 ```objc
-if ([someObject boolValue] == NO)
 if (isAwesome == YES) // Never do this.
+if ([someObject boolValue] == NO)
 ```
 
 -----
@@ -437,6 +455,24 @@ Singleton objects should use a thread-safe pattern for creating their shared ins
 }
 ```
 This will prevent [possible and sometimes prolific crashes](http://cocoasamurai.blogspot.com/2011/04/singletons-your-doing-them-wrong.html).
+
+## Imports
+
+If there is more than one import statement, group the statements [together](http://ashfurrow.com/blog/structuring-modern-objective-c). Commenting each group is optional.
+
+Note: For modules use the [@import](http://clang.llvm.org/docs/Modules.html#using-modules) syntax.
+
+```objc
+// Frameworks
+@import QuartzCore;
+
+// Models
+#import "NYTUser.h"
+
+// Views
+#import "NYTButton.h"
+#import "NYTUserView.h"
+```
 
 ## Xcode project
 
